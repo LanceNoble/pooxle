@@ -8,8 +8,7 @@
   <title>Pooxle Home</title>
   <style>
     body {
-      /*background-color: gray;*/
-      margin: 0;
+      /*margin: 0;*/
     }
 
     canvas {
@@ -28,7 +27,6 @@
       const pixelSize = 100;
       canvas.width = 1000;
       canvas.height = 1000;
-      // https://stackoverflow.com/questions/442404/retrieve-the-position-x-y-of-an-html-element
       const canvasRect = canvas.getBoundingClientRect();
       canvas.onmousedown = (e) => {
         ctx.fillStyle = "white";
@@ -44,24 +42,35 @@
         method: "get",
         headers: { "Accept": "application/json" }
       });
-      const obj = await response.json();
-      for (const drawing in obj.drawings) {
-        list.innerHTML += `<li>
-            <img src="${obj.drawings[drawing].img}">
-            <p>${obj.drawings[drawing].name}<p>
-        </li>`;
+      const drawings = await response.json();
+      for (const drawing of drawings.results) {
+        list.innerHTML += `
+          <li>
+            <img src="${drawing.img}">
+            <p>
+              "${drawing.cap}"
+              by ${drawing.name}
+              on ${drawing.date}
+            </p>
+          </li>`;
       }
       const form = document.querySelector("form");
       form.onsubmit = async (e) => {
         e.preventDefault();
+        const date = new Date();
         response = await fetch("/post", {
           method: "post",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json"
           },
-          //https://help.mulesoft.com/s/article/HTTP-Request-with-Plus-Sign-in-Query-Param-is-Converted-to-Space-by-HTTP-Listener
-          body: `img=${canvas.toDataURL().replaceAll("+", "%2B")}&name=${form.querySelector("#nameField").value}`
+          // "+" is not translated well in url format
+          // it has to be represented as %2B (more info below)
+          // https://help.mulesoft.com/s/article/HTTP-Request-with-Plus-Sign-in-Query-Param-is-Converted-to-Space-by-HTTP-Listener
+          body: `img=${canvas.toDataURL().replaceAll("+", "%2B")}
+          &cap=${form.querySelector("#capField").value}
+          &name=${form.querySelector("#nameField").value}
+          &date=${date}`
         });
         return false;
       };
@@ -74,7 +83,9 @@
   <h2>Make pixel art and share it with others!</h2>
   <form>
     <canvas></canvas>
-    <label for="name">Name: </label>
+    <label for="capField">Caption: </label>
+    <input id="capField" type="text">
+    <label for="nameField">Name: </label>
     <input id="nameField" type="text">
     <input type="submit">
   </form>
