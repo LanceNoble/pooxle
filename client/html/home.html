@@ -6,48 +6,65 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pooxle Home</title>
-  <!--<script src="js/home.js" type="module"></script>-->
-  <link rel="stylesheet" type="text/css" href="/getHomeCSS">
   <style>
     body {
-      background-color: black;
+      /*background-color: gray;*/
       margin: 0;
     }
 
     canvas {
-      background-color: white;
+      background-color: black;
     }
-
     img {
       width: 25%;
       height: 25%;
+      background-color: black;
     }
   </style>
   <script>
-    async function loadJsonFetch(url, options) {
-      const response = await fetch(url, options);
+    window.onload = async () => {
+      const canvas = document.querySelector("canvas");
+      const ctx = canvas.getContext("2d");
+      const pixelSize = 100;
+      canvas.width = 1000;
+      canvas.height = 1000;
+      // https://stackoverflow.com/questions/442404/retrieve-the-position-x-y-of-an-html-element
+      const canvasRect = canvas.getBoundingClientRect();
+      canvas.onmousedown = (e) => {
+        ctx.fillStyle = "white";
+        const mouseX = e.pageX - canvasRect.x;
+        const mouseY = e.pageY - canvasRect.y;
+        const rectX = pixelSize * Math.trunc(mouseX / pixelSize);
+        const rectY = pixelSize * Math.trunc(mouseY / pixelSize);
+        ctx.fillRect(rectX, rectY, pixelSize, pixelSize);
+      };
       const list = document.querySelector("ul");
       list.innerHTML = "";
+      let response = await fetch("/art", {
+        method: "get",
+        headers: { "Accept": "application/json" }
+      });
       const obj = await response.json();
       for (const drawing in obj.drawings) {
-        console.log();
-        console.log(drawing.img);
         list.innerHTML += `<li>
-            <img src=${obj.drawings[drawing].img}>
+            <img src="${obj.drawings[drawing].img}">
             <p>${obj.drawings[drawing].name}<p>
         </li>`;
       }
-    }
-
-    window.onload = () => {
-      loadJsonFetch("/getArt", {
-        method: "get",
-        headers: {
-          "Accept": "application/json"
-        }
-      });
-
-
+      const form = document.querySelector("form");
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        response = await fetch("/post", {
+          method: "post",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json"
+          },
+          //https://help.mulesoft.com/s/article/HTTP-Request-with-Plus-Sign-in-Query-Param-is-Converted-to-Space-by-HTTP-Listener
+          body: `img=${canvas.toDataURL().replaceAll("+", "%2B")}&name=${form.querySelector("#nameField").value}`
+        });
+        return false;
+      };
     }
   </script>
 </head>
@@ -55,7 +72,12 @@
 <body>
   <h1>Pooxle (Pixel Art + Doodle)</h1>
   <h2>Make pixel art and share it with others!</h2>
-  <canvas></canvas>
+  <form>
+    <canvas></canvas>
+    <label for="name">Name: </label>
+    <input id="nameField" type="text">
+    <input type="submit">
+  </form>
   <h3>Other people's pixel art!</h3>
   <ul>
 
