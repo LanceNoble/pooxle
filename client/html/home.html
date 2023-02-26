@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pooxle Home</title>
+  <!--<script src="js/home.js" type="module"></script>-->
+  <link rel="stylesheet" type="text/css" href="/getHomeCSS">
+  <style>
+    body {
+      background-color: black;
+      margin: 0;
+    }
+
+    canvas {
+      background-color: white;
+    }
+
+    img {
+      width: 25%;
+      height: 25%;
+    }
+  </style>
+  <script>
+    async function loadJsonFetch(url, options) {
+      const response = await fetch(url, options);
+      const list = document.querySelector("ul");
+      list.innerHTML = "";
+      const obj = await response.json();
+      for (const drawing in obj.drawings) {
+        console.log();
+        console.log(drawing.img);
+        list.innerHTML += `<li>
+            <img src=${obj.drawings[drawing].img}>
+            <p>${obj.drawings[drawing].name}<p>
+        </li>`;
+      }
+    }
+
+    window.onload = () => {
+      loadJsonFetch("/getArt", {
+        method: "get",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+
+    }
+  </script>
+</head>
+
+<body>
+  <h1>Pooxle (Pixel Art + Doodle)</h1>
+  <h2>Make pixel art and share it with others!</h2>
+  <canvas></canvas>
+  <h3>Other people's pixel art!</h3>
+  <ul>
+
+  </ul>
+</body>
+
+</html>
