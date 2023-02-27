@@ -1,10 +1,13 @@
-const respond = (res, stat, mime, stuff) => {
+// generic helper function for responding to requests
+const respond = (res, stat, mime, stuff, write = true) => {
   res.writeHead(stat, { 'Content-Type': `${mime}` });
-  let jsonResponse = stuff;
+  let response = stuff;
   if (mime === 'application/json') {
-    jsonResponse = JSON.stringify(stuff);
+    response = JSON.stringify(stuff);
   }
-  res.write(jsonResponse);
+  if (write) {
+    res.write(response);
+  }
   res.end();
 };
 module.exports = { respond };

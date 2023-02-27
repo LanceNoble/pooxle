@@ -5,83 +5,16 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pooxle Home</title>
-  <style>
-    body {
-      /*margin: 0;*/
-    }
-
-    canvas {
-      background-color: black;
-    }
-    img {
-      width: 25%;
-      height: 25%;
-      background-color: black;
-    }
-  </style>
-  <script>
-    window.onload = async () => {
-      const canvas = document.querySelector("canvas");
-      const ctx = canvas.getContext("2d");
-      const pixelSize = 100;
-      canvas.width = 1000;
-      canvas.height = 1000;
-      const canvasRect = canvas.getBoundingClientRect();
-      canvas.onmousedown = (e) => {
-        ctx.fillStyle = "white";
-        const mouseX = e.pageX - canvasRect.x;
-        const mouseY = e.pageY - canvasRect.y;
-        const rectX = pixelSize * Math.trunc(mouseX / pixelSize);
-        const rectY = pixelSize * Math.trunc(mouseY / pixelSize);
-        ctx.fillRect(rectX, rectY, pixelSize, pixelSize);
-      };
-      const list = document.querySelector("ul");
-      list.innerHTML = "";
-      let response = await fetch("/art", {
-        method: "get",
-        headers: { "Accept": "application/json" }
-      });
-      const drawings = await response.json();
-      for (const drawing of drawings.results) {
-        list.innerHTML += `
-          <li>
-            <img src="${drawing.img}">
-            <p>
-              "${drawing.cap}"
-              by ${drawing.name}
-              on ${drawing.date}
-            </p>
-          </li>`;
-      }
-      const form = document.querySelector("form");
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const date = new Date();
-        response = await fetch("/post", {
-          method: "post",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Accept": "application/json"
-          },
-          // "+" is not translated well in url format
-          // it has to be represented as %2B (more info below)
-          // https://help.mulesoft.com/s/article/HTTP-Request-with-Plus-Sign-in-Query-Param-is-Converted-to-Space-by-HTTP-Listener
-          body: `img=${canvas.toDataURL().replaceAll("+", "%2B")}
-          &cap=${form.querySelector("#capField").value}
-          &name=${form.querySelector("#nameField").value}
-          &date=${date}`
-        });
-        return false;
-      };
-    }
-  </script>
+  <title>Pooxle</title>
+  <link rel="stylesheet" href="/css">
+  <script src="/js" type="module"></script>
 </head>
 
 <body>
   <h1>Pooxle (Pixel Art + Doodle)</h1>
   <h2>Make pixel art and share it with others!</h2>
-  <form>
+
+  <form id="submissionForm" action="/post" method="post">
     <canvas></canvas>
     <label for="capField">Caption: </label>
     <input id="capField" type="text">
@@ -89,6 +22,18 @@
     <input id="nameField" type="text">
     <input type="submit">
   </form>
+
+  <h3>Want to find another person's art? Search their name here!</h3>
+  <p id="searchInstructions">To remove the search filter, refresh the page to get all results</p>
+  <form id="searchForm" action="/art" method="get">
+    <label for="nameSearch">Name: </label>
+    <input id="nameSearch" type="text">
+    <input type="submit">
+  </form>
+
+  <h3>Status</h3>
+  <p id="statusMessage"></p>
+
   <h3>Other people's pixel art!</h3>
   <ul>
 
