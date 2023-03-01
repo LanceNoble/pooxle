@@ -37,7 +37,7 @@ window.onload = async () => {
     canvas.width = 1000;
     canvas.height = 1000;
     const canvasPos = canvas.getBoundingClientRect();
-    const pixelSize = 50;
+    const pixelSize = 10;
     const ctx = canvas.getContext("2d");
     ctx.fillStyle = "white";
     
