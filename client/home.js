@@ -37,25 +37,41 @@ window.onload = async () => {
     canvas.width = 1000;
     canvas.height = 1000;
     const canvasPos = canvas.getBoundingClientRect();
-    const pixelSize = 100;
+    const pixelSize = 50;
     const ctx = canvas.getContext("2d");
-    canvas.onmousedown = (e) => {
-        ctx.fillStyle = "white";
+    ctx.fillStyle = "white";
+    
 
-        // canvasPos offsets the mouse coordinates
-        // so the mouse coords are relative only to the canvas
-        // otherwise, they would be relative to the whole document
-        // and pixel placement would not be accurate
-        // const mouseX = e.pageX - canvasPos.x;
-        // const mouseY = e.pageY - canvasPos.y;
+    // BORROWED CODE
+    // Enables the user to continuously draw while holding down mouse button
+    // mousedown event only fires once, so user has to keep clicking to place pixels
+    // setInterval will fix that for us
+    // https://stackoverflow.com/questions/41304737/why-onmousedown-event-occur-once-how-to-handle-mouse-hold-event
+    let timer;
+    let mouseX;
+    let mouseY;
+    let rectX;
+    let rectY;
+    canvas.addEventListener("mousemove", (e) => {
+        mouseX = e.pageX - canvasPos.x;
+        mouseY = e.pageY - canvasPos.y;
+        rectX = pixelSize * Math.trunc(mouseX / pixelSize);
+        rectY = pixelSize * Math.trunc(mouseY / pixelSize);
+    });
+    canvas.addEventListener("mousedown", (e) => {
+        timer = setInterval(() => {
+            // const rectX = pixelSize * Math.trunc(mouseX / pixelSize);
+            // const rectY = pixelSize * Math.trunc(mouseY / pixelSize);
+            ctx.fillRect(rectX, rectY, pixelSize, pixelSize);
+        }, 50);
+    });
+    function mouseDone(e) {
+        clearInterval(timer);
+    }
+    canvas.addEventListener("mouseup", mouseDone);
+    canvas.addEventListener("mouseleave", mouseDone);
 
-        const mouseX = canvasPos.x;
-        const mouseY = canvasPos.y;
 
-        const rectX = pixelSize * Math.trunc(mouseX / pixelSize);
-        const rectY = pixelSize * Math.trunc(mouseY / pixelSize);
-        ctx.fillRect(rectX, rectY, pixelSize, pixelSize);
-    };
 
     let res;
     // Load other artist's posts whenever user loads this page
@@ -133,4 +149,6 @@ window.onload = async () => {
         }
         return false;
     };
+
+
 }
