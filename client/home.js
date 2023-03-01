@@ -53,8 +53,11 @@ window.onload = async () => {
     let rectX;
     let rectY;
     canvas.addEventListener("mousemove", (e) => {
+        // BORROWED CODE FROM https://stackoverflow.com/questions/17130395/real-mouse-position-in-canvas
         mouseX = e.pageX - canvasPos.x;
         mouseY = e.pageY - canvasPos.y;
+        //mouseX = e.clientX - canvasPos.x;
+        //mouseY = e.clientY - canvasPos.y;
         rectX = pixelSize * Math.trunc(mouseX / pixelSize);
         rectY = pixelSize * Math.trunc(mouseY / pixelSize);
     });
