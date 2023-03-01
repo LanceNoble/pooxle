@@ -46,8 +46,11 @@ window.onload = async () => {
         // so the mouse coords are relative only to the canvas
         // otherwise, they would be relative to the whole document
         // and pixel placement would not be accurate
-        const mouseX = e.pageX - canvasPos.x;
-        const mouseY = e.pageY - canvasPos.y;
+        // const mouseX = e.pageX - canvasPos.x;
+        // const mouseY = e.pageY - canvasPos.y;
+
+        const mouseX = canvasPos.x;
+        const mouseY = canvasPos.y;
 
         const rectX = pixelSize * Math.trunc(mouseX / pixelSize);
         const rectY = pixelSize * Math.trunc(mouseY / pixelSize);
