@@ -1,13 +1,11 @@
-// fetches a resource based on the resource requested and its request options
-// handles the response fetched to let the user know how the fetch process went
-// returns the response so its fetched information can be represented to the user
+// fetches resource and shows user the response status
 async function handle(resource, options) {
     const response = await fetch(resource, options);
     const status = document.querySelector("#statusMessage");
 
     // handle status codes
     // 404 usually occurs bc user enters a bad url path
-    // so it's handled in server instead
+    // so it's handled in server code instead
     switch (response.status) {
         case 200:
             status.textContent = "You successfully retrieved other users' pooxles, check them out below!";
@@ -32,20 +30,21 @@ async function handle(resource, options) {
 };
 
 window.onload = async () => {
-    // Setup canvas functionality
+    // Setup canvas
     const canvas = document.querySelector("canvas");
     canvas.width = 1000;
     canvas.height = 1000;
     const canvasPos = canvas.getBoundingClientRect();
-    const pixelSize = 50;
+    const pixelSize = 10;
     const ctx = canvas.getContext("2d");
     ctx.fillStyle = "white";
     
 
     // BORROWED CODE
-    // Enables the user to continuously draw while holding down mouse button
-    // mousedown event only fires once, so user has to keep clicking to place pixels
-    // setInterval will fix that for us
+    // workaround for events only firing once
+    // simulates them firing multiple times
+    // let's user continuously draw while holding down mouse button
+    // instead of having to click everytime to place a pixel
     // https://stackoverflow.com/questions/41304737/why-onmousedown-event-occur-once-how-to-handle-mouse-hold-event
     let timer;
     let mouseX;
@@ -53,27 +52,31 @@ window.onload = async () => {
     let rectX;
     let rectY;
     canvas.addEventListener("mousemove", (e) => {
-        // BORROWED CODE FROM https://stackoverflow.com/questions/17130395/real-mouse-position-in-canvas
+        // make mouse coordinates local to canvas coordinates for accurate pixel placement
+        // page does not scroll horizontally, so we can use page or client coords
         mouseX = e.pageX - canvasPos.x;
         mouseY = e.pageY - canvasPos.y;
         //mouseX = e.clientX - canvasPos.x;
         //mouseY = e.clientY - canvasPos.y;
+        // Math.trunc ensures that pixel doesn't take up multiple gridboxes 
         rectX = pixelSize * Math.trunc(mouseX / pixelSize);
         rectY = pixelSize * Math.trunc(mouseY / pixelSize);
+        //rectX = pixelSize * (mouseX / pixelSize);
+        //rectY = pixelSize * (mouseY / pixelSize);
     });
-    canvas.addEventListener("mousedown", (e) => {
+    canvas.addEventListener("mousedown", () => {
         timer = setInterval(() => {
             // const rectX = pixelSize * Math.trunc(mouseX / pixelSize);
             // const rectY = pixelSize * Math.trunc(mouseY / pixelSize);
             ctx.fillRect(rectX, rectY, pixelSize, pixelSize);
-        }, 50);
+        });
     });
-    function mouseDone(e) {
+    function mouseDone() {
         clearInterval(timer);
     }
     canvas.addEventListener("mouseup", mouseDone);
     canvas.addEventListener("mouseleave", mouseDone);
-
+    // END OF BORROWED CODE
 
 
     let res;
