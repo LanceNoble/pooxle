@@ -34,9 +34,21 @@ window.onload = async () => {
     const cvs = document.querySelector("canvas");
     cvs.width = 1000;
     cvs.height = 1000;
-    const pixelSize = 10;
+    // Please make sure that the pixel size is a proper divisor of the canvas
+    const pixelSize = 20;
     const ctx = cvs.getContext("2d");
     ctx.fillStyle = "white";
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    // Make grid lines so user can anticipate where their pixel is being placed
+    ctx.beginPath();
+    for (let i = 0; i < cvs.width / pixelSize; i++) {
+
+    }
+    // ctx.moveTo(500, 200);
+    // ctx.lineTo(500, 500);
+    // ctx.closePath();
+    // ctx.stroke();
     
 
     // BORROWED CODE
@@ -45,35 +57,28 @@ window.onload = async () => {
     // let's user continuously draw while holding down mouse button
     // instead of having to click everytime to place a pixel
     // https://stackoverflow.com/questions/41304737/why-onmousedown-event-occur-once-how-to-handle-mouse-hold-event
-    // ISSUE: when the page is scrolled
-    
     let pixelX;
     let pixelY;
     let timer;
     cvs.addEventListener("mousemove", (e) => {
+        // put canvas coords in global space
         const cvsPos = cvs.getBoundingClientRect();
         const cvsX = cvsPos.x;
         const cvsY = cvsPos.y;
-        // make mouse coordinates local to canvas coordinates for accurate pixel placement
-        // page does not scroll horizontally, so we can use page or client coords
         const canXAbs = cvsX + window.scrollX;
         const canYAbs = cvsY + window.scrollY;
-        //cvsMouseX = e.pageX - cvsPos.x;
-        //cvsMouseY = e.pageY - cvsPos.y;
+
+        // put mouse coords relative to canvas space
         const cvsMouseX = e.pageX - canXAbs;
         const cvsMouseY = e.pageY - canYAbs;
-        //mouseX = e.clientX - canvasPos.x;
-        //mouseY = e.clientY - canvasPos.y;
+
         // Math.trunc ensures that pixel doesn't take up multiple gridboxes 
+        // especially in the event of a pixel size that is not a proper divisor of the canvas dimensions
         pixelX = pixelSize * Math.trunc(cvsMouseX / pixelSize);
         pixelY = pixelSize * Math.trunc(cvsMouseY / pixelSize);
-        //rectX = pixelSize * (mouseX / pixelSize);
-        //rectY = pixelSize * (mouseY / pixelSize);
     });
     cvs.addEventListener("mousedown", () => {
         timer = setInterval(() => {
-            // const rectX = pixelSize * Math.trunc(mouseX / pixelSize);
-            // const rectY = pixelSize * Math.trunc(mouseY / pixelSize);
             ctx.fillRect(pixelX, pixelY, pixelSize, pixelSize);
         });
     });

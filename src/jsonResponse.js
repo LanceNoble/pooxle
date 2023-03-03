@@ -10,7 +10,6 @@ const art = (req, res, params) => {
   jsonResponse.results = drawings;
   if (params.name) {
     const searchedName = params.name.trim().toLowerCase().replaceAll(' ', '');
-    // console.log(drawings);
     jsonResponse.results = drawings.filter((drawing) => drawing.name.trim().toLowerCase().replaceAll(' ', '') === searchedName);
   }
   if (req.method === 'HEAD') {
