@@ -31,12 +31,11 @@ async function handle(resource, options) {
 
 window.onload = async () => {
     // Setup canvas
-    const canvas = document.querySelector("canvas");
-    canvas.width = 1000;
-    canvas.height = 1000;
-    const canvasPos = canvas.getBoundingClientRect();
+    const cvs = document.querySelector("canvas");
+    cvs.width = 1000;
+    cvs.height = 1000;
     const pixelSize = 10;
-    const ctx = canvas.getContext("2d");
+    const ctx = cvs.getContext("2d");
     ctx.fillStyle = "white";
     
 
@@ -46,36 +45,43 @@ window.onload = async () => {
     // let's user continuously draw while holding down mouse button
     // instead of having to click everytime to place a pixel
     // https://stackoverflow.com/questions/41304737/why-onmousedown-event-occur-once-how-to-handle-mouse-hold-event
+    // ISSUE: when the page is scrolled
+    
+    let pixelX;
+    let pixelY;
     let timer;
-    let mouseX;
-    let mouseY;
-    let rectX;
-    let rectY;
-    canvas.addEventListener("mousemove", (e) => {
+    cvs.addEventListener("mousemove", (e) => {
+        const cvsPos = cvs.getBoundingClientRect();
+        const cvsX = cvsPos.x;
+        const cvsY = cvsPos.y;
         // make mouse coordinates local to canvas coordinates for accurate pixel placement
         // page does not scroll horizontally, so we can use page or client coords
-        mouseX = e.pageX - canvasPos.x;
-        mouseY = e.pageY - canvasPos.y;
+        const canXAbs = cvsX + window.scrollX;
+        const canYAbs = cvsY + window.scrollY;
+        //cvsMouseX = e.pageX - cvsPos.x;
+        //cvsMouseY = e.pageY - cvsPos.y;
+        const cvsMouseX = e.pageX - canXAbs;
+        const cvsMouseY = e.pageY - canYAbs;
         //mouseX = e.clientX - canvasPos.x;
         //mouseY = e.clientY - canvasPos.y;
         // Math.trunc ensures that pixel doesn't take up multiple gridboxes 
-        rectX = pixelSize * Math.trunc(mouseX / pixelSize);
-        rectY = pixelSize * Math.trunc(mouseY / pixelSize);
+        pixelX = pixelSize * Math.trunc(cvsMouseX / pixelSize);
+        pixelY = pixelSize * Math.trunc(cvsMouseY / pixelSize);
         //rectX = pixelSize * (mouseX / pixelSize);
         //rectY = pixelSize * (mouseY / pixelSize);
     });
-    canvas.addEventListener("mousedown", () => {
+    cvs.addEventListener("mousedown", () => {
         timer = setInterval(() => {
             // const rectX = pixelSize * Math.trunc(mouseX / pixelSize);
             // const rectY = pixelSize * Math.trunc(mouseY / pixelSize);
-            ctx.fillRect(rectX, rectY, pixelSize, pixelSize);
+            ctx.fillRect(pixelX, pixelY, pixelSize, pixelSize);
         });
     });
     function mouseDone() {
         clearInterval(timer);
     }
-    canvas.addEventListener("mouseup", mouseDone);
-    canvas.addEventListener("mouseleave", mouseDone);
+    cvs.addEventListener("mouseup", mouseDone);
+    cvs.addEventListener("mouseleave", mouseDone);
     // END OF BORROWED CODE
 
 
@@ -115,7 +121,7 @@ window.onload = async () => {
             },
             // "+" has to be represented as %2B (more info below)
             // https://help.mulesoft.com/s/article/HTTP-Request-with-Plus-Sign-in-Query-Param-is-Converted-to-Space-by-HTTP-Listener
-            body: `img=${canvas.toDataURL().replaceAll("+", "%2B")}
+            body: `img=${cvs.toDataURL().replaceAll("+", "%2B")}
                     &cap=${submissionForm.querySelector("#capField").value}
                     &name=${submissionForm.querySelector("#nameField").value}
                     &date=${date}`
