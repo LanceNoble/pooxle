@@ -142,6 +142,7 @@ window.onload = async () => {
             // "+" has to be represented as %2B (more info below)
             // ' ' is represented as + 
             // https://help.mulesoft.com/s/article/HTTP-Request-with-Plus-Sign-in-Query-Param-is-Converted-to-Space-by-HTTP-Listener
+            // do NOT make a new line (pressing enter) to make the query params more grouped and organized, keep it on one single line of code
             body: `img=${cvs.toDataURL().replaceAll("+", "%2B")}&cap=${submissionForm.querySelector("#capField").value}&name=${submissionForm.querySelector("#nameField").value}&date=${date}`
         });
         // if (res.status !== 204) {
@@ -164,6 +165,9 @@ window.onload = async () => {
             method: searchFormMethod,
             headers: { "Accept": "application/json" }
         });
+        if (res.status !== 200) {
+            return false;
+        }
         res = await res.json();
         list.innerHTML = "";
         for (const drawing of res.results) {
