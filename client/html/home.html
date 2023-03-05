@@ -7,32 +7,108 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pooxle</title>
   <link rel="stylesheet" href="/css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <script src="/js" type="module"></script>
 </head>
 
 <body>
-  <h1>Pooxle (Pixel Art + Doodle)</h1>
-  <h2>Make pixel art and share it with others!</h2>
 
-  <form id="submissionForm" action="/post" method="post">
-    <canvas></canvas>
-    <label for="capField">Caption: </label>
-    <input id="capField" type="text">
-    <label for="nameField">Name: </label>
-    <input id="nameField" type="text">
-    <input type="submit">
-  </form>
+  <div class="hero is-small has-background-primary-dark">
+    <header class="hero-body">
+      <h1 class="title is-1 has-text-primary-light">Pooxle</h1>
+      <h2 class="subtitle is-3 has-text-primary-light">Bored? Draw some pixels.</h2>
+    </header>
+  </div>
 
-  <h3>Want to find another person's art? Search their name here!</h3>
-  <p id="searchInstructions">To remove the search filter, refresh the page to get all results</p>
-  <form id="searchForm" action="/art" method="get">
-    <label for="nameSearch">Name: </label>
-    <input id="nameSearch" type="text">
-    <input type="submit">
-  </form>
+  <div class="hero is-small has-background-info-dark">
+    <section class="hero-body content">
+      <h3 class="has-text-info-light">Instructions</h3>
+      <ol class="has-text-info-light">
+        <li>Hover your mouse cursor over the gridbox you want to place a pixel in</li>
+        <li>Click the left mouse button to place a pixel in that gridbox</li>
+        <li>To continuously place pixels, hold down the left mouse button</li>
+        <li>Add a caption describing your pooxle</li>
+        <li>Add a name so everyone knows who made this pooxle</li>
+        <li>Click the share button to post your pooxle for everyone to see</li>
+        <li>If the canvas does not appear, refresh the page</li>
+      </ol>
+    </section>
+  </div>
 
-  <h3>Status</h3>
-  <p id="statusMessage"></p>
+
+  <div class="columns container is-vcentered m-6">
+    <div class="column">
+      <canvas width="1000" height="1000"></canvas>
+    </div>
+    <div class="column ">
+      <form class="box mb-6" id="submissionForm" action="/post" method="post">
+
+        <div class="field is-inline-block">
+          <label class="label" for="capField">Caption: </label>
+          <div class="control">
+            <input class="input" id="capField" type="text" placeholder="e.g. My Awesome Pooxle">
+          </div>
+        </div>
+
+        <div class="field is-inline-block">
+          <label class="label" for="nameField">Name: </label>
+          <div class="control">
+            <input id="nameField" type="text" class="input" placeholder="e.g. Bob" required>
+          </div>
+        </div>
+
+        <div class="field is-inline-block">
+          <div class="control">
+            <input class="button" type="submit" value="Share">
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+
+
+
+  <div class="hero is-small has-background-info-dark mb-6">
+    <section class="hero-body content columns container is-vcentered">
+      <div class="column is-half">
+        <h3 class="has-text-info-light">Find a person's pooxle by searching their name here</h3>
+        <ol class="has-text-info-light">
+          <li>Enter the name of the pooxler you wish to look for in the search bar</li>
+          <li>Click the search button to find their pooxle</li>
+          <li>To remove the search filter, refresh the page</li>
+          <li>By default, all pooxles are shown whenever the page is loaded</li>
+        </ol>
+      </div>
+
+      <div class="column">
+        <form class="box" id="searchForm" action="/art" method="get">
+          <div class="field has-addons">
+            <div class="control">
+              <input class="input" id="nameSearch" type="text" placeholder="Search for a pooxler" required>
+            </div>
+            <div class="control">
+              <input class="button" type="submit" value="Search">
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div id="statusMessage" class="column">
+      </div>
+    </section>
+  </div>
+
+
+
+
+  <!--<section class="content box has-background-info-dark ml-6 mr-6 mb-6">
+
+    <h3>Status</h3>
+    <p id="statusMessage"></p>
+  </section>-->
+
 
   <h3>Other people's pixel art!</h3>
   <ul>

@@ -9,7 +9,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Tests complete\"",
-    "start": "node ./src/server.js",
+    "start": "nodemon ./src/server.js",
     "pretest": "eslint ./src --fix"
   },
   "repository": {

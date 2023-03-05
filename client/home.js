@@ -2,26 +2,38 @@
 async function handle(resource, options) {
     const response = await fetch(resource, options);
     const status = document.querySelector("#statusMessage");
+    let statColor;
+    let statMsg
 
     // handle status codes
     // 404 usually occurs bc user enters a bad url path
     // so it's handled in server code instead
     switch (response.status) {
         case 200:
-            status.textContent = "You successfully retrieved other users' pooxles, check them out below!";
+            statMsg = "Pooxle(s) retrieved";
+            statColor = "is-success";
             break;
         case 201:
-            status.textContent = "You successfully created a new pooxle!";
+            statMsg = "Pooxle created";
+            statColor = "is-success";
             break;
         case 204:
-            status.textContent = "You successfully updated an existing pooxle!";
+            statMsg = "Pooxle updated";
+            statColor = "is-success";
             break;
         case 400:
-            status.textContent = "Please provide a name for your pooxle post!";
+            statMsg = "Make sure the name only has letters and numbers (i.e. no spaces, underscores, etc.)";
+            statColor = "is-danger";
             break;
         default:
             break;
     }
+
+    status.innerHTML = `
+        <div class="notification ${statColor}">
+            <p>${statMsg}</p>
+        </div>
+    `;
 
     // return response instead of response.json()
     // bc there's a chance that the response status is 204 (more info below)
@@ -31,25 +43,28 @@ async function handle(resource, options) {
 
 window.onload = async () => {
     // Setup canvas
-    const cvs = document.querySelector("canvas");
-    cvs.width = 1000;
-    cvs.height = 1000;
-    // Please make sure that the pixel size is a proper divisor of the canvas
+    const cvs = await document.querySelector("canvas");
+    // Please try making the pixel size a proper divisor of the canvas
     const pixelSize = 20;
-    const ctx = cvs.getContext("2d");
-    ctx.fillStyle = "white";
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 2;
+    const ctx = await cvs.getContext("2d");
+    ctx.fillStyle = "black";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 0.125;
     // Make grid lines so user can anticipate where their pixel is being placed
-    ctx.beginPath();
-    for (let i = 0; i < cvs.width / pixelSize; i++) {
-
+    for (let i = 0; i < cvs.height / pixelSize; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, i * pixelSize);
+        ctx.lineTo(cvs.width, i * pixelSize);
+        ctx.closePath();
+        ctx.stroke();
     }
-    // ctx.moveTo(500, 200);
-    // ctx.lineTo(500, 500);
-    // ctx.closePath();
-    // ctx.stroke();
-    
+    for (let i = 0; i < cvs.width / pixelSize; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * pixelSize, 0);
+        ctx.lineTo(i * pixelSize, cvs.height);
+        ctx.closePath();
+        ctx.stroke();
+    }
 
     // BORROWED CODE
     // workaround for events only firing once
@@ -131,9 +146,9 @@ window.onload = async () => {
                     &name=${submissionForm.querySelector("#nameField").value}
                     &date=${date}`
         });
-        if (res.status !== 204) {
-            res = await res.json();
-        }
+        // if (res.status !== 204) {
+        //     res = await res.json();
+        // }
         return false;
     };
 
