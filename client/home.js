@@ -1,14 +1,25 @@
-// fetches resource and shows user the response status
-async function handle(resource, options) {
-    const response = await fetch(resource, options);
-    const status = document.querySelector("#statusMessage");
+// fetches json resources and let's the user know how the request went
+async function handle(resource, options, callback) {
+    const stat = document.querySelector("#statusMessage");
     let statColor;
-    let statMsg
-
-    // handle status codes
-    // 404 usually occurs bc user enters a bad url path
-    // so it's handled in server code instead
-    switch (response.status) {
+    let statMsg;
+    let res;
+    try {
+        res = await fetch(resource, options);
+    }
+    catch (e) {
+        statMsg = `${e}, try refreshing the page`;
+        statColor = "is-warning";
+        stat.innerHTML = `
+        <div class="notification ${statColor}">
+            <p>${statMsg}</p>
+        </div>
+        `;
+        return;
+    }
+    // 404 usually happens when the user inputs a nonexistent path in the url bar
+    // so it's handled in the server side code instead
+    switch (res.status) {
         case 200:
             statMsg = "Pooxle(s) retrieved";
             statColor = "is-success";
@@ -26,27 +37,36 @@ async function handle(resource, options) {
             statColor = "is-danger";
             break;
         default:
+            statMsg = "Unhandled status"
+            statColor = "is-warning";
             break;
     }
-
-    status.innerHTML = `
+    stat.innerHTML = `
         <div class="notification ${statColor}">
             <p>${statMsg}</p>
         </div>
     `;
-
-    // return response instead of response.json()
-    // bc there's a chance that the response status is 204 (more info below)
-    // https://stackoverflow.com/questions/65815485/status-204-response-json-caught-syntaxerror-unexpected-end-of-json-input-a
-    return response;
-};
-
-window.onload = async () => {
+    // as of now, we only expect an error 400 to happen when requesting json
+    // when 400 happens, extracting json() will not work, so return early
+    // note there may be more errors to handle in the future
+    // as for success statuses, 204 does not have a response body
+    // so json() still won't work on that
+    // or if nothing was passed into the callback parameter, exit
+    if (res.status === 400 || res.status === 204 || !callback) {
+        return;
+    }
+    const json = await res.json();
+    // this callback function parameter will typically be a function
+    // that serves to present the results to the user visually on the
+    // webpage
+    callback(json);
+}
+window.onload = () => {
     // Setup canvas
-    const cvs = await document.querySelector("canvas");
+    const cvs = document.querySelector("canvas");
     // Please try making the pixel size a proper divisor of the canvas
     const pixelSize = 20;
-    const ctx = await cvs.getContext("2d");
+    const ctx = cvs.getContext("2d");
     ctx.fillStyle = "black";
     ctx.strokeStyle = "black";
     ctx.lineWidth = 0.125;
@@ -65,7 +85,6 @@ window.onload = async () => {
         ctx.closePath();
         ctx.stroke();
     }
-
     // BORROWED CODE
     // workaround for events only firing once
     // simulates them firing multiple times
@@ -82,11 +101,9 @@ window.onload = async () => {
         const cvsY = cvsPos.y;
         const canXAbs = cvsX + window.scrollX;
         const canYAbs = cvsY + window.scrollY;
-
         // put mouse coords relative to canvas space
         const cvsMouseX = e.pageX - canXAbs;
         const cvsMouseY = e.pageY - canYAbs;
-
         // Math.trunc ensures that pixel doesn't take up multiple gridboxes 
         // especially in the event of a pixel size that is not a proper divisor of the canvas dimensions
         pixelX = pixelSize * Math.trunc(cvsMouseX / pixelSize);
@@ -103,29 +120,23 @@ window.onload = async () => {
     cvs.addEventListener("mouseup", mouseDone);
     cvs.addEventListener("mouseleave", mouseDone);
     // END OF BORROWED CODE
-
-
     let res;
     // Load other artist's posts whenever user loads this page
     const list = document.querySelector("ul");
     list.innerHTML = "";
-    res = await handle("/art", {
+    handle("/art", {
         method: "GET",
         headers: { "Accept": "application/json" }
-    });
-    res = await res.json();
-    for (const drawing of res.results) {
-        list.innerHTML += `
-        <li>
-          <img src="${drawing.img}">
-          <p>
-            "${drawing.cap}"
-            by ${drawing.name}
-            on ${drawing.date}
-          </p>
-        </li>`;
-    }
-
+    },
+        (json) => {
+            for (const drawing of json.results) {
+                list.innerHTML += `
+                <li>
+                  <img src="${drawing.img}">
+                  <p>"${drawing.cap}" by ${drawing.name} on ${drawing.date}</p>
+                </li>`;
+            }
+        });
     // Set up posting functionality
     const submissionForm = document.querySelector("#submissionForm");
     const submissionFormAction = submissionForm.getAttribute("action");
@@ -133,7 +144,7 @@ window.onload = async () => {
     submissionForm.onsubmit = async (e) => {
         e.preventDefault();
         const date = new Date();
-        res = await handle(submissionFormAction, {
+        handle(submissionFormAction, {
             method: submissionFormMethod,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -142,47 +153,40 @@ window.onload = async () => {
             // "+" has to be represented as %2B (more info below)
             // ' ' is represented as + 
             // https://help.mulesoft.com/s/article/HTTP-Request-with-Plus-Sign-in-Query-Param-is-Converted-to-Space-by-HTTP-Listener
-            // do NOT make a new line (pressing enter) to make the query params more grouped and organized, keep it on one single line of code
+            // keep the query params on a single line of code bc new lines do get registered in the body
             body: `img=${cvs.toDataURL().replaceAll("+", "%2B")}&cap=${submissionForm.querySelector("#capField").value}&name=${submissionForm.querySelector("#nameField").value}&date=${date}`
         });
-        // if (res.status !== 204) {
-        //     res = await res.json();
-        // }
         return false;
     };
-
     // Set up searching functionality
     const searchForm = document.querySelector("#searchForm");
     const searchFormAction = searchForm.getAttribute("action");
     const searchFormMethod = searchForm.getAttribute("method");
     searchForm.onsubmit = async (e) => {
-        // e.preventDefault() and returning false is so that
-        // we aren't redirected to the actual json text material when we fetch
-        // via form submission
+        // e.preventDefault() tells the form element that we're going to handle the request ourselves
+        // otherwise, the form will redirect us to a page showing the literal JSON text
         e.preventDefault();
         const searchedName = searchForm.querySelector("#nameSearch");
-        res = await handle(`${searchFormAction}?name=${encodeURIComponent(searchedName.value)}`, {
-            method: searchFormMethod,
-            headers: { "Accept": "application/json" }
-        });
-        if (res.status !== 200) {
-            return false;
-        }
-        res = await res.json();
-        list.innerHTML = "";
-        for (const drawing of res.results) {
-            list.innerHTML += `
-            <li>
-              <img src="${drawing.img}">
-              <p>
-                "${drawing.cap}"
-                by ${drawing.name}
-                on ${drawing.date}
-              </p>
-            </li>`;
-        }
+        handle(`${searchFormAction}?name=${encodeURIComponent(searchedName.value)}`,
+            {
+                method: searchFormMethod,
+                headers: { "Accept": "application/json" }
+            },
+            (json) => {
+                list.innerHTML = "";
+                for (const drawing of json.results) {
+                    list.innerHTML += `
+                    <li>
+                      <img src="${drawing.img}">
+                      <p>
+                        "${drawing.cap}"
+                        by ${drawing.name}
+                        on ${drawing.date}
+                      </p>
+                    </li>`;
+                }
+            });
+        // returning false prevents the event from bubbling up
         return false;
     };
-
-
 }

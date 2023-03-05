@@ -14,9 +14,6 @@ http.createServer((req, res) => {
     case '/':
       staticResponse.home(res);
       break;
-    case '/css':
-      staticResponse.css(res);
-      break;
     case '/js':
       staticResponse.js(res);
       break;

@@ -2,7 +2,6 @@ const query = require('querystring');
 const response = require('./response.js');
 
 const drawings = [];
-let jsonResponse;
 
 // helper function to make sure the name param only has letters and numbers
 function checkName(name) {
@@ -25,7 +24,7 @@ function checkName(name) {
 
 // serves up art from all users
 const art = (req, res, params) => {
-  jsonResponse = {};
+  const jsonResponse = {};
   jsonResponse.results = drawings;
   if (params.name) {
     if (!checkName(params.name)) {
@@ -43,7 +42,6 @@ const art = (req, res, params) => {
 
 // updates the artwork data
 const post = (req, res) => {
-  jsonResponse = {};
   const body = [];
   req.on('data', (chunk) => {
     body.push(chunk);
