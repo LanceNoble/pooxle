@@ -6,17 +6,18 @@ let jsonResponse;
 
 // helper function to make sure the name param only has letters and numbers
 function checkName(name) {
-  let validChar = false;
+  let validChar = true;
   for (let i = 0; i < name.length; i++) {
     const code = name.charCodeAt(i);
+    // console.log(code);
     if (code >= 48 && code <= 57) {
       validChar = true;
-    }
-    if (code >= 65 && code <= 90) {
+    } else if (code >= 65 && code <= 90) {
       validChar = true;
-    }
-    if (code >= 97 && code <= 122) {
+    } else if (code >= 97 && code <= 122) {
       validChar = true;
+    } else {
+      return false;
     }
   }
   return validChar;
@@ -31,8 +32,6 @@ const art = (req, res, params) => {
       response.respond(res, 400, 'application/json');
       return;
     }
-    // console.log(drawing.name);
-    // console.log(params.name);
     jsonResponse.results = drawings.filter((drawing) => drawing.name === params.name);
   }
   if (req.method === 'HEAD') {
@@ -53,6 +52,7 @@ const post = (req, res) => {
     const bodyString = Buffer.concat(body).toString();
     const bodyParams = query.parse(bodyString);
     // check to see if body params name only contains letters and numbers
+    // console.log(bodyParams.name);
     if (!checkName(bodyParams.name)) {
       response.respond(res, 400, 'application/json');
       return;

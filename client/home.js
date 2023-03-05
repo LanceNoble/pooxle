@@ -140,11 +140,9 @@ window.onload = async () => {
                 "Accept": "application/json"
             },
             // "+" has to be represented as %2B (more info below)
+            // ' ' is represented as + 
             // https://help.mulesoft.com/s/article/HTTP-Request-with-Plus-Sign-in-Query-Param-is-Converted-to-Space-by-HTTP-Listener
-            body: `img=${cvs.toDataURL().replaceAll("+", "%2B")}
-                    &cap=${submissionForm.querySelector("#capField").value}
-                    &name=${submissionForm.querySelector("#nameField").value}
-                    &date=${date}`
+            body: `img=${cvs.toDataURL().replaceAll("+", "%2B")}&cap=${submissionForm.querySelector("#capField").value}&name=${submissionForm.querySelector("#nameField").value}&date=${date}`
         });
         // if (res.status !== 204) {
         //     res = await res.json();
